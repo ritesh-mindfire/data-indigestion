@@ -38,9 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'accounts.apps.AccountsConfig',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -139,7 +141,7 @@ EMAIL_HOST_USER = 'no-reply@mindfiresolutions.com'
 # EMAIL_HOST_PASSWORD = 'test'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'log')
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'log', 'emails')
 
 
 import os
@@ -162,24 +164,42 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
         },
-        'file': {
+        'file_runserver': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'log', 'debug.log'),
+            'filename': os.path.join(BASE_DIR, 'log', 'runserver.log'),
+            'formatter': 'verbose'
+        },
+        'file_runserver_error': {
+            'level': 'WARNING',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log', 'runserver_error.log'),
+            'formatter': 'verbose'
+        },
+        'file_db_backends': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log', 'dbbackend.log'),
             'formatter': 'verbose'
         },
     },
     'loggers': {
         'django.server': {
-            'handlers': ['file'],
+            'handlers': ['file_runserver', 'file_runserver_error'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
             'propagate': True,
         },
-        # 'django.db.backends': {
-        #     'handlers': ['console'],
-        #     'level': 'DEBUG',
-        #     # 'propagate': False,
-        # },
+        'django.db.backends': {
+            'handlers': ['file_db_backends'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'quickstart': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+
+        }
     },
 }
 
@@ -188,7 +208,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://localhost:6379/3',
-        'TIMEOUT': 60,
+        'TIMEOUT': 60*30,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'MAX_ENTRIES': 20,
@@ -196,3 +216,8 @@ CACHES = {
         }
     }
 }
+
+
+INTERNAL_IPS = [
+    '127.0.0.1',
+]

@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -14,6 +15,9 @@ class Manufacturer(models.Model):
     price = models.FloatField()
     
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_current_year_model(self):
+        return datetime.today().year == self.car_year
 
     
     # def __str__(self):

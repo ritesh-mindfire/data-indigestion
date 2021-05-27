@@ -7,20 +7,28 @@ from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from accounts import tasks
 from accounts.models import Manufacturer
 
+import logging
+logger = logging.getLogger('quickstart')
+
 # Create your views here.
 
 CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
-print(CACHE_TTL)
+# print(CACHE_TTL)
 
 def dashboard(request):
     tasks.task_json_file_process()
 
-    if 'manufacturers' in cache:
+    if 'mydata' in cache:
         # get results from cache
-        manufacturers = cache.get('data')
+        manufacturers = cache.get('mydata')
+        logger.info('Fetched from cache data {}'.format(manufacturers))
 
     else:
         manufacturers = Manufacturer.objects.all()
-        cache.set('data', manufacturers, timeout=CACHE_TTL)
+        manufacturers = list(manufacturers.values('id')[:5])
+        cache.set('mydata', manufacturers)
+        logger.info('Fetched from Database {}'.format(manufacturers))
 
-    return HttpResponse("Hello, world. You're at the dashboard. Total records: {}".format(manufacturers.count()))
+    ctx = {'manufacturers': manufacturers}
+    return render(request, 'dashboard.html', ctx)
+    # return HttpResponse("Hello, world. You're at the dashboard. Total records: {}".format(manufacturers))

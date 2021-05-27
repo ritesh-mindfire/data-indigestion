@@ -8,3 +8,4 @@ redis==3.5.3
 requests==2.25.1
 XlsxWriter==1.4.3
 django-redis==4.12.1
+django-debug-toolbar==3.2.1
