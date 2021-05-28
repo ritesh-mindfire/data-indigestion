@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td {
+  border: 1px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+}
+
+th {
+  border: 2px solid #dddddd;
+  text-align: center;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+h2 {text-align: center;}
+</style>
+</head>
+<body>
+
+<h2>Daily Report</h2>
+
+<table>
+    <tr>
+        <th>Country</th>
+        <th>Manufacturer</th>
+        <th>Car Manufactured</th>
+        <th>Total Price</th>
+    </tr>
+    {% for record in record_data %}
+    <tr>
+        <td>{{ record.country }}</td>
+        <td>{{ record.name }}</td>
+        <td>{{ record.cnt }}</td>
+        <td>{{ record.total_price }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>

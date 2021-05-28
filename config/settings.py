@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts.apps.AccountsConfig',
     'debug_toolbar',
     'rest_framework',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -125,13 +126,27 @@ STATIC_URL = '/static/'
 
 MEDIA_DOWNLOAD_PATH = os.path.join(BASE_DIR, 'media_download')
 
+MEDIA_UPLOAD_PATH = os.path.join(BASE_DIR, 'media_upload')
+
 AUTH_USER_MODEL = 'accounts.User'
 
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULE = {
+    'add-every-30-seconds': {
+        'task': 'custom_add',
+        'schedule': 30.0,
+        'args': (5, 20)
+    },
+    'mul-every-10-seconds': {
+        'task': 'accounts.tasks.mul',
+        'schedule': 10.0,
+        'args': (2, 3)
+    },
+}
 
 
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

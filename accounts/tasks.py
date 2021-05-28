@@ -1,18 +1,21 @@
-import os
-import json
 import csv
+import json
+import os
+from datetime import datetime
 
 import openpyxl
-
 from celery import shared_task
+
 from django.conf import settings
-from accounts.models import Manufacturer
-from datetime import date, datetime
-from django.db.models import Count, Sum
 from django.core.mail import EmailMessage
+from django.db.models import Count
+from django.db.models import Sum
+
+from accounts import report
+from accounts.models import Manufacturer
 
 
-@shared_task
+@shared_task(name='custom_add')
 def add(x, y):
     return x + y
 
@@ -87,22 +90,11 @@ def task_json_file_process():
             continue
 
     # Start report creation
-    all_obj = Manufacturer.objects.filter(created_at__date=datetime.today().date())
-    record_data = all_obj.values('country', 'name').annotate(cnt=Count('id'), total_price=Sum('price'))
-    report_name = "{}.csv".format(datetime.today().date().strftime("%Y-%m-%d"))
-    report_path = os.path.join(settings.MEDIA_DOWNLOAD_PATH, report_name)
+    csv_filepath = report.create_csv_report()
+    pdf_filepath = report.create_pdf_report()
+    xlsx_filepath = report.create_excel_report()    
 
-    with open(report_path, 'w') as f:
-        writer = csv.writer(f, delimiter=',')
-        writer.writerow(['Country', 'Manufacturer', 'Car Manufactured', 'Total Price'])
-
-        for record in record_data:
-            writer.writerow([record['country'],
-                            record['name'],
-                            record['cnt'],
-                            record['total_price']])
-
-        # TODO:  upload report back to Drive Folder Reports
+    # TODO:  upload report back to Drive Folder Reports
         
     # email sending post file processing
     task_send_daily_job_status_email(success, failure, failure_files)
