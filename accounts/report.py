@@ -12,10 +12,7 @@ from django.template.loader import render_to_string
 from accounts.models import Manufacturer
 
 
-def create_pdf_report():
-    all_obj = Manufacturer.objects.filter(created_at__date=datetime.today().date())
-    record_data = all_obj.values('country', 'name').annotate(cnt=Count('id'), total_price=Sum('price'))
-    
+def create_pdf_report(record_data):
     data = render_to_string('report.html', {'record_data': record_data})
 
     report_name = "{}.pdf".format(datetime.today().date().strftime("%Y-%m-%d"))
@@ -26,10 +23,7 @@ def create_pdf_report():
     return report_path
 
 
-def create_csv_report():
-    all_obj = Manufacturer.objects.filter(created_at__date=datetime.today().date())
-    record_data = all_obj.values('country', 'name').annotate(cnt=Count('id'), total_price=Sum('price'))
-
+def create_csv_report(record_data):
     report_name = "{}.csv".format(datetime.today().date().strftime("%Y-%m-%d"))
     report_path = os.path.join(settings.MEDIA_UPLOAD_PATH, report_name)
 
@@ -46,10 +40,7 @@ def create_csv_report():
     return report_path
 
 
-def create_excel_report():
-    all_obj = Manufacturer.objects.filter(created_at__date=datetime.today().date())
-    record_data = all_obj.values('country', 'name').annotate(cnt=Count('id'), total_price=Sum('price'))
-
+def create_excel_report(record_data):
     report_name = "{}.xlsx".format(datetime.today().date().strftime("%Y-%m-%d"))
     report_path = os.path.join(settings.MEDIA_UPLOAD_PATH, report_name)
 

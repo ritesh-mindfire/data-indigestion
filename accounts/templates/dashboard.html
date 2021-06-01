@@ -1,14 +1,92 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    Hello, world. You're at the dashboard. 
 
-    Data: {{ manufacturers }}
+<!DOCTYPE html>
+<html>
+<title>DashBoard</title>
+
+<style>
+    h1 {text-align: center;}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<body>
+<h1>Welcome to DashBoard</h1>
+
+<canvas id="myChart" style="width:100%;max-width:850px"></canvas>
+<canvas id="myChart2" style="width:100%;max-width:850px"></canvas>
+
+<script>
+  var xValues = [];
+  var yValues = [];
+
+  {% for record in record_data %}
+      xValues.push("{{ record.country }}")
+      yValues.push({{ record.cnt }})
+  {% endfor %}
+  maxyValue = Math.max(...yValues)
+
+  new Chart("myChart", {
+    type: "bar",
+    data: {
+      labels: xValues,
+      datasets: [{
+        fill: false,
+        lineTension: 0,
+        backgroundColor: "rgba(0,0,255,1.0)",
+        borderColor: "rgba(0,0,255,0.1)",
+        data: yValues
+      }]
+    },
+    options: {
+      legend: {display: false},
+      scales: {
+        yAxes: [{ticks: {min: 1, max:maxyValue+5}}],
+      },
+      title: {
+          display:true,
+          text: "Car manufactured Country-wise"
+      }
+    }
+  });
+</script>
+
+<script>
+  
+  var dataset1 = [];
+  var dataset2 = [];
+  var xValues = [];
+  var datasets = [];
+
+  {% for date in monthly_record.dates %}
+    xValues.push("{{ date }}")
+  {% endfor %}
+
+  {% for key, data in monthly_record.records %}
+    var tmp = {'data': [], 'label': '', 'fill': false, borderColor: "green"}
+    tmp.data = {{ data|safe }}
+    tmp.label = "{{ key }}"
+    datasets.push(tmp)
+  {% endfor %}
+
+  new Chart("myChart2", {
+    type: "line",
+    data: {
+      labels: xValues,
+      datasets: datasets
+    },
+    options: {
+      legend: {display: false},
+      title: {
+          display:true,
+          text: "Car manufactured per day Country-Wise"
+      }
+    }
+  });
+  
+</script>
+
+
+
 </body>
 </html>
+
+

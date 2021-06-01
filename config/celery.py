@@ -14,7 +14,7 @@ app.config_from_object('django.conf:settings', namespace='CELERY')
 # Load task modules from all registered Django app configs.
 app.autodiscover_tasks()
 
-
+app.conf.task_default_queue = 'project_queue'
 # app.conf.beat_schedule = {
 #     'add-every-30-seconds': {
 #         'task': 'custom_add',

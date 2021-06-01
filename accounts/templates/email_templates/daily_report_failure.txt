@@ -1,0 +1,6 @@
+Hi Admin,
+
+No file is availale on Google Drive for processing today ({{today_date}}). 
+
+Regards,
+Development Team

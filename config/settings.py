@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+from celery.schedules import crontab
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -136,15 +137,10 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BEAT_SCHEDULE = {
-    'add-every-30-seconds': {
-        'task': 'custom_add',
-        'schedule': 30.0,
-        'args': (5, 20)
-    },
-    'mul-every-10-seconds': {
-        'task': 'accounts.tasks.mul',
-        'schedule': 10.0,
-        'args': (2, 3)
+    'my-custom-schedule-task': {
+        'task': 'task_data_processing_and_report_creation',
+        'schedule': crontab(hour=14, minute=2),
+        'args': ()
     },
 }
 
@@ -198,6 +194,12 @@ LOGGING = {
             'filename': os.path.join(BASE_DIR, 'log', 'dbbackend.log'),
             'formatter': 'verbose'
         },
+        'file_custom': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'log', 'project.log'),
+            'formatter': 'verbose'
+        },
     },
     'loggers': {
         'django.server': {
@@ -211,7 +213,7 @@ LOGGING = {
             'propagate': True,
         },
         'quickstart': {
-            'handlers': ['console'],
+            'handlers': ['file_custom'],
             'level': 'DEBUG',
             'propagate': True,
 

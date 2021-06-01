@@ -8,11 +8,17 @@ from celery import shared_task
 
 from django.conf import settings
 from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
 from django.db.models import Count
 from django.db.models import Sum
 
+
 from accounts import report
 from accounts.models import Manufacturer
+from gdrive_service.gdrive import GDriveService
+
+import logging
+logger = logging.getLogger('quickstart')
 
 
 @shared_task(name='custom_add')
@@ -20,19 +26,38 @@ def add(x, y):
     return x + y
 
 
-@shared_task
+@shared_task    
 def mul(x, y):
     return x * y
 
 
-@shared_task
-def task_json_file_process():
-    folder_path = os.path.join(settings.MEDIA_DOWNLOAD_PATH,'2021-05-20')
+@shared_task(name='task_data_processing_and_report_creation')
+def task_data_processing_and_report_creation():
+    logger.info('**'*25)
+    logger.info('Start task for file processing and report creation')
+    folder_path = os.path.join(settings.MEDIA_DOWNLOAD_PATH, datetime.today().strftime("%Y-%m-%d"))
+    if not os.path.isdir(folder_path):
+        os.mkdir(folder_path)
+
+    gdrive_instance = GDriveService(folder_path)
+
+    folder_id = gdrive_instance.fetch_drive_folders('Manufacture Data')
+    if folder_id:
+        gdrive_instance.fetch_drive_folder_files(folder_id)
+    else:
+        logger.info("Folder name does not exist with name 'Manufacture Data'")
+        return None
+    
     dir_list = os.listdir(folder_path)
+    if not dir_list:
+        logger.info('No file received for processing today')
+        task_send_daily_nofile_email()
+        return None
 
     success, failure = 0, 0
     failure_files = []
 
+    logger.info('File processing fetched from Drive (%s)' % dir_list)
     for filename in dir_list:
         filepath = os.path.join(folder_path,filename)
 
@@ -90,20 +115,33 @@ def task_json_file_process():
             continue
 
     # Start report creation
-    csv_filepath = report.create_csv_report()
-    pdf_filepath = report.create_pdf_report()
-    xlsx_filepath = report.create_excel_report()    
+    logger.info('Prepare data from DB for report creation')
+    all_obj = Manufacturer.objects.filter(created_at__date=datetime.today().date())
+    record_data = all_obj.values('country', 'name').annotate(cnt=Count('id'), total_price=Sum('price'))
 
-    # TODO:  upload report back to Drive Folder Reports
-        
+    logger.info('Prepare report for data fetched from DB')
+    csv_filepath = report.create_csv_report(record_data)
+    pdf_filepath = report.create_pdf_report(record_data)
+    xlsx_filepath = report.create_excel_report(record_data)
+
+    # upload report back to Drive Folder Reports
+    folder_id = gdrive_instance.fetch_drive_folders('Report')
+    if not folder_id:
+        folder_id = gdrive_instance.create_drive_folder('Report')
+
+    logger.info('Uploading report file to Drive')
+    gdrive_instance.upload_drive_files(folder_id, csv_filepath)
+    gdrive_instance.upload_drive_files(folder_id, pdf_filepath)
+    gdrive_instance.upload_drive_files(folder_id, xlsx_filepath)
+    logger.info('Uploading report file to Drive completed')
+
     # email sending post file processing
     task_send_daily_job_status_email(success, failure, failure_files)
 
 
 def process_data_into_db(data: list) -> None:
     for data_dct in data:
-        # print(data_dct)
-        # print('--------------------------------------------------')
+
         manufacturer_dct = {
             'name': data_dct.get('Manufacturer', ''),
             'car_model' : data_dct.get('Model', ''),
@@ -134,6 +172,24 @@ def task_send_daily_job_status_email(success, failure, failure_files):
         
     Regards,
     Mindfire Team""".format(success+failure, success, failure, failure_files)
+    recipient_list = ['ritesh.g@mindfiresolutions.com' ]
+
+    email = EmailMessage(
+        subject,
+        message,
+        settings.EMAIL_HOST_USER,
+        recipient_list,
+        bcc=[],
+    )
+    email.send(fail_silently=False)
+
+
+@shared_task
+def task_send_daily_nofile_email():
+    
+    ctx = {'today_date': datetime.today().strftime("%Y-%m-%d")}
+    subject = "Daily status report for {}".format(ctx['today_date'])
+    message = render_to_string('email_templates/daily_report_failure.txt', ctx)
     recipient_list = ['ritesh.g@mindfiresolutions.com' ]
 
     email = EmailMessage(
