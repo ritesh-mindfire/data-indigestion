@@ -11,8 +11,8 @@
 <body>
 <h1>Welcome to DashBoard</h1>
 
-<canvas id="myChart" style="width:100%;max-width:850px"></canvas>
-<canvas id="myChart2" style="width:100%;max-width:850px"></canvas>
+<canvas id="myChart" style="width:100%;max-width:600px"></canvas>
+<canvas id="myChart2" style="width:100%;max-width:600px"></canvas>
 
 <script>
   var xValues = [];
@@ -60,10 +60,11 @@
     xValues.push("{{ date }}")
   {% endfor %}
 
+  var color_arr = ['red', 'green', 'blue', 'yello', 'orange', 'pink', 'purple']
   {% for key, data in monthly_record.records %}
-    var tmp = {'data': [], 'label': '', 'fill': false, borderColor: "green"}
+    var color = color_arr[Math.floor(Math.random() * color_arr.length)];
+    var tmp = {'data': [], 'label': '{{ key }}', 'fill': false, 'borderColor': color}
     tmp.data = {{ data|safe }}
-    tmp.label = "{{ key }}"
     datasets.push(tmp)
   {% endfor %}
 

@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 # gdrive credentials
+gdrive_service/sa-credentials.json
 gdrive_service/credentials.json
 gdrive_service/token.json
