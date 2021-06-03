@@ -1,9 +1,11 @@
+from datetime import date
+from datetime import datetime
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from datetime import date, datetime
 
 from accounts.models import Manufacturer
-from django.contrib.auth import get_user_model
 User = get_user_model()
 
 # class ManufacturerSerializer(serializers.Serializer):

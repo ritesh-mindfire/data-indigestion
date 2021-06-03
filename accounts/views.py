@@ -1,29 +1,28 @@
-from datetime import datetime, time
-
-from rest_framework import status
-from rest_framework import mixins
-from rest_framework import generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.parsers import JSONParser
-from rest_framework import filters
-
-from django_filters.rest_framework import DjangoFilterBackend
+from datetime import datetime
+from datetime import time
 
 from django.conf import settings
-from django.shortcuts import render
 from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.db.models import Count
-from django.db.models.functions import Cast
 from django.db.models.fields import DateField
+from django.db.models.functions import Cast
+from django.http import HttpResponse
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from rest_framework import generics
+from rest_framework import mixins
+from rest_framework import status
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-from accounts import serializers
 from accounts import tasks
 from accounts.serializers import ManufacturerModelSerializer, UserSerializer
 from accounts.models import Manufacturer

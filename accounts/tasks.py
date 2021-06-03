@@ -1,23 +1,20 @@
 import csv
 import json
+import logging
 import os
 from datetime import datetime
 
 import openpyxl
 from celery import shared_task
-
 from django.conf import settings
 from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
 from django.db.models import Count
 from django.db.models import Sum
-
+from django.template.loader import render_to_string
 
 from accounts import report
 from accounts.models import Manufacturer
 from gdrive_service.gdrive import GDriveService
-
-import logging
 logger = logging.getLogger('quickstart')
 
 
