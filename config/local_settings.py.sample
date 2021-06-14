@@ -1,0 +1,43 @@
+import os
+
+# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = '_#q^&l$@k)p^f6g5c&_^bvea&7rkb*343j0lryvz)rck07w@p4'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+
+AWS_ACCESS_KEY_ID = 'AKxxxxxH7'
+AWS_SECRET_ACCESS_KEY = 'nqxxxxxy8'
+AWS_STORAGE_BUCKET_NAME = 'my-aws-s3-bucket-name'
+AWS_S3_SIGNATURE_VERSION = 's3v4'
+AWS_S3_REGION_NAME = 'ap-south-1'
+# AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+# AWS_S3_OBJECT_PARAMETERS = {
+#     'CacheControl': 'max-age=86400',
+# }
+AWS_S3_SECURE_URLS = False       # use http instead of https
+AWS_QUERYSTRING_AUTH = True      # Add complex authentication-related query parameters for requests (For Private Bucket)
+AWS_LOCATION = 'static'
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+# STATIC_URL = '/static/'
+STATICFILES_DIRS = []
+
+STATIC_AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
+STATIC_URL = 'https://%s/%s/' % (STATIC_AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+MEDIA_URL = '/media-ui/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = 'config.storage_backends.MediaStorage'

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        form {
+            border: 1px solid black;
+            width: 80%;
+            margin: 10px auto;
+            padding: 10px 10px;
+            text-align: center;
+        }
+
+        form input {
+            margin: 3px 0px;
+        }
+    </style>
+
+    <title>Document</title>
+</head>
+<body>
+    Add "?file-name=myfile.ext" in query param to change upload file name.
+    <form action="{{ url }}" method="post" enctype="multipart/form-data">
+        <input type="text" name="key" placeholder="key" value="{{ key }}" readonly><br />
+        <input type="text" name="policy" placeholder="policy" value="{{ policy }}" readonly><br />
+        <input type="text" name="x-amz-algorithm" placeholder="x-amz-algorithm" value="{{ algorithm }}" readonly><br />
+        <input type="text" name="x-amz-credential" placeholder="x-amz-credential" value="{{ credential }}" readonly><br />
+        <input type="text" name="x-amz-date" placeholder="x-amz-date" value="{{ date }}" readonly><br />
+        <input type="text" name="x-amz-signature" placeholder="x-amz-signature" value="{{ signature }}" readonly><br />
+        <input type="file" name="file"><br />
+
+        <button type="submit">Uploat to S3</button>
+    </form>
+    
+</body>
+</html>

@@ -13,18 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 from celery.schedules import crontab
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from config.local_settings import *
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_#q^&l$@k)p^f6g5c&_^bvea&7rkb*343j0lryvz)rck07w@p4'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -43,6 +33,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_celery_beat',
     'django_filters',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -61,7 +52,9 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'awsservices', 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,6 +77,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    },
+    'users': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'dbusers.sqlite3'),
     }
 }
 
@@ -120,14 +117,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_URL = '/static/'
-
 MEDIA_DOWNLOAD_PATH = os.path.join(BASE_DIR, 'media_download')
-
 MEDIA_UPLOAD_PATH = os.path.join(BASE_DIR, 'media_upload')
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -227,7 +217,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://localhost:6379/3',
-        'TIMEOUT': 60*30,
+        'TIMEOUT': 60*2,
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'MAX_ENTRIES': 20,
@@ -247,3 +237,5 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
+
+

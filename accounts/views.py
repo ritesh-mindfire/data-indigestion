@@ -1,53 +1,63 @@
-from datetime import datetime
-from datetime import time
+from datetime import datetime, time
+
+from rest_framework import status
+from rest_framework import mixins
+from rest_framework import generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.parsers import JSONParser
+from rest_framework import filters
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 from django.conf import settings
+from django.shortcuts import render, redirect
 from django.core.cache import cache
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.db.models import Count
-from django.db.models.fields import DateField
 from django.db.models.functions import Cast
-from django.http import HttpResponse
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters
-from rest_framework import generics
-from rest_framework import mixins
-from rest_framework import status
-from rest_framework.parsers import JSONParser
-from rest_framework.response import Response
-from rest_framework.views import APIView
+from django.db.models.fields import DateField
+from django.views.decorators.cache import cache_page
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
+from accounts import serializers
 from accounts import tasks
 from accounts.serializers import ManufacturerModelSerializer, UserSerializer
-from accounts.models import Manufacturer
+from accounts.models import Manufacturer, UploadFile
 
 import logging
 logger = logging.getLogger('quickstart')
 
 # Create your views here.
 
-CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+# CACHE_TTL = getattr(settings, 'CACHE_TTL', DEFAULT_TIMEOUT)
+# print('----------------', CACHE_TTL)
+CACHE_TTL = 60*2
 # print(CACHE_TTL)
 
+@cache_page(CACHE_TTL)
 def dashboard(request):
-    # tasks.task_data_processing_and_report_creation()
+    # tasks.task_data_processing_and_report_creation.delay()
 
-    if 'country_datax' in cache:
-        # get results from cache
-        record_data = cache.get('country_data')
-        # logger.info('Fetched from cache data {}'.format(manufacturers))
+    today_min = datetime.combine(datetime.today(), time.min)
+    manufacturers = Manufacturer.objects.filter(created_at__gte=today_min)
+    record_data = manufacturers.values('country').annotate(cnt=Count('id')).values('country', 'cnt')
 
-    else:
-        today_min = datetime.combine(datetime.today(), time.min)
-        manufacturers = Manufacturer.objects.filter(created_at__gte=today_min)
-        record_data = manufacturers.values('country').annotate(cnt=Count('id')).values('country', 'cnt')
-        cache.set('country_data', record_data)
+
+    # if 'country_datax' in cache:
+    #     # get results from cache
+    #     record_data = cache.get('country_data')
+    #     # logger.info('Fetched from cache data {}'.format(manufacturers))
+
+    # else:
+    #     today_min = datetime.combine(datetime.today(), time.min)
+    #     manufacturers = Manufacturer.objects.filter(created_at__gte=today_min)
+    #     record_data = manufacturers.values('country').annotate(cnt=Count('id')).values('country', 'cnt')
+    #     cache.set('country_data', record_data)
         # logger.info('Fetched from Database {}'.format(manufacturers))
 
     qs = Manufacturer.objects.filter()
@@ -151,3 +161,28 @@ class ManufacturersList(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['name', 'country']
     filterset_fields = ['name', 'country']
+
+
+
+from django import forms
+class UploadFileForm(forms.ModelForm):
+    class Meta:
+        model = UploadFile
+        fields = ('image',)
+
+
+def upload_modelfile_view(request):
+    ctx = {}
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('/upload-modelfile/')
+    else:
+        form = UploadFileForm()
+    
+    ctx = {
+        'form': form,
+        'objects': UploadFile.objects.all()
+    }
+    return render(request, 'simple_upload.html', ctx)

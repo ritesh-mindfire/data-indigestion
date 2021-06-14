@@ -21,6 +21,7 @@ logger = logging.getLogger('quickstart')
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/drive']
 credentials_file_path = os.path.join(settings.BASE_DIR, 'gdrive_service', 'sa-credentials.json')
+# credentials_file_path = 'credentials.json'
 
 
 class GDriveService:
@@ -35,6 +36,27 @@ class GDriveService:
         credentials = ServiceAccountCredentials.from_json_keyfile_name(
             credentials_file_path, scopes=SCOPES)
         return credentials
+    
+    def get_credentials(self, token_file_path):
+        creds = None
+        # The file token.json stores the user's access and refresh tokens, and is
+        # created automatically when the authorization flow completes for the first
+        # time.
+        if os.path.exists(token_file_path):
+            creds = Credentials.from_authorized_user_file(token_file_path, SCOPES)
+        # If there are no (valid) credentials available, let the user log in.
+        if not creds or not creds.valid:
+            if creds and creds.expired and creds.refresh_token:
+                import pdb; pdb.set_trace()
+                creds.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(credentials_file_path, SCOPES)
+                creds = flow.run_local_server(port=0)
+            # Save the credentials for the next run
+            with open(token_file_path, 'w') as token:
+                token.write(creds.to_json())
+
+        return creds
 
     def download_drive_file(self, file_id, file_name):
         folder_path = self.media_downloadpath
@@ -116,8 +138,8 @@ class GDriveService:
         print('File Upload: %s (%s) %s' % (file.get('name'), file.get('id'), file.get('mimeType')))
 
 
-# if __name__ == '__main__':
-#     gdrive_instance = GDriveService('../media_download')
+if __name__ == '__main__':
+    gdrive_instance = GDriveService('../media_download')
 
     # folder_id = gdrive_instance.fetch_drive_folders('Manufacture Data')
     # if folder_id:
@@ -125,9 +147,9 @@ class GDriveService:
     # else:
     #     print("Folder name does not exist with name Manufacture Data")
     
-    # folder_id = gdrive_instance.fetch_drive_folders('Report')
-    # if not folder_id:
-    #     folder_id = gdrive_instance.create_drive_folder('Report')
+    folder_id = gdrive_instance.fetch_drive_folders('Report')
+    if not folder_id:
+        folder_id = gdrive_instance.create_drive_folder('Report')
 
     # file_path = 'sample.py'
     # gdrive_instance.upload_drive_files(folder_id, file_path)

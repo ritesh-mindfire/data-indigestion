@@ -1,4 +1,4 @@
-
+{% load static %}
 <!DOCTYPE html>
 <html>
 <title>DashBoard</title>
@@ -10,6 +10,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 <body>
 <h1>Welcome to DashBoard</h1>
+
+<main>
+  <img src="{% static 'img/index.png' %}">
+  <h2>It's working!</h2>
+</main>
 
 <canvas id="myChart" style="width:100%;max-width:600px"></canvas>
 <canvas id="myChart2" style="width:100%;max-width:600px"></canvas>
@@ -84,7 +89,6 @@
   });
   
 </script>
-
 
 
 </body>

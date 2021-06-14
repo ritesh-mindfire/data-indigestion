@@ -1,7 +1,7 @@
 from datetime import datetime
-
-from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.db.models.base import Model
 
 
 # Create your models here.
@@ -22,5 +22,8 @@ class Manufacturer(models.Model):
         return datetime.today().year == self.car_year
 
     
-    def __str__(self):
-        return self.name
+    # def __str__(self):
+    #     return self.name
+    
+class UploadFile(models.Model):
+    image = models.FileField(upload_to='images')

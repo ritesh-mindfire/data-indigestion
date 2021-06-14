@@ -12,4 +12,8 @@ urlpatterns = [
     path('api/userinfo/', views.UserInfo.as_view()),
 ]
 
+urlpatterns += [
+    path('upload-file/', views.upload_modelfile_view, name='upload-modelfile-view'),
+]
+
 urlpatterns = format_suffix_patterns(urlpatterns)
